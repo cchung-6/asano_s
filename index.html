@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>浅野 駿 — 아사노 슌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=Oswald:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505;
+  --film:#0b0b0b;
+  --hole:#e6e6e6;
+  --edge:#9a7cc4;
+  --text:#ededed;
+  --muted:#7a7a7a;
+  --lavender:#b39ad8;
+
+  --fw:min(62vw, 82vh, 1100px);     /* 프레임(이미지) 폭 */
+  --gap:calc(var(--fw) * .018);     /* 프레임 사이 검은 띠 절반 */
+  --rail:calc(var(--fw) * .085);    /* 위/아래 스프로킷 레일 높이 */
+}
+@media (max-width:700px){ :root{ --fw:min(78vw, 70vh); } }
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);overflow:hidden;overscroll-behavior:none}
+html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:"Noto Serif KR","Nanum Myeongjo","Batang",serif;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  -webkit-font-smoothing:antialiased;
+}
+/* 필름 그레인 */
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:10;opacity:.07;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* 상단 타이틀 */
+.title{position:fixed;top:calc(env(safe-area-inset-top,0px) + 28px);left:clamp(20px,4vw,56px);z-index:5;pointer-events:none}
+.title h1{font-weight:600;font-size:clamp(22px,2.4vw,32px);letter-spacing:.12em}
+.title p{margin-top:6px;font-size:13px;color:var(--muted);letter-spacing:.08em}
+
+/* 하단 정보 */
+.foot{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);left:clamp(20px,4vw,56px);right:clamp(20px,4vw,56px);
+  display:flex;justify-content:space-between;align-items:baseline;z-index:5;pointer-events:none;font-size:13px;color:var(--muted)}
+.hint{transition:opacity .8s}
+.hint.gone{opacity:0}
+.count{font-family:"Oswald",sans-serif;letter-spacing:.1em;color:var(--edge)}
+
+/* 뷰포트 / 트랙 */
+.viewport{position:absolute;inset:0;display:flex;align-items:center;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;outline:none}
+.viewport.drag{cursor:grabbing}
+.track{display:flex;align-items:flex-start;will-change:transform}
+.track.snap{transition:transform .55s cubic-bezier(.22,.8,.26,1)}
+.track.intro{transition:transform 1.6s cubic-bezier(.16,.84,.3,1)}
+.track.jump .shot img,.track.jump figcaption{transition:none}
+
+.cell{flex:0 0 auto;width:calc(var(--fw) + var(--gap) * 2)}
+.film{background:var(--film)}
+
+/* 스프로킷 레일 */
+.rail{height:var(--rail);display:flex;flex-direction:column;justify-content:space-between;position:relative}
+.rail.top{padding-top:calc(var(--rail)*.06)}
+.rail.bot{flex-direction:column-reverse;padding-bottom:calc(var(--rail)*.06)}
+.marks{height:40%;position:relative;font-family:"Oswald",sans-serif;color:var(--edge);
+  font-size:calc(var(--rail)*.3);line-height:1;letter-spacing:.06em}
+.marks span{position:absolute;top:50%;transform:translateY(-50%);white-space:nowrap}
+.holes{height:52%;display:flex;justify-content:space-around;padding:0 calc(var(--gap)*.5)}
+.holes i{display:block;width:calc(var(--fw)*.032);height:100%;background:var(--hole);border-radius:calc(var(--rail)*.09)}
+.rail.top .holes{margin-bottom:calc(var(--rail)*.1)}
+.rail.bot .holes{margin-top:calc(var(--rail)*.1)}
+
+/* 이미지 칸 */
+.shot{position:relative;margin:0 var(--gap);aspect-ratio:1218/832;background:#1a1a1a;overflow:hidden}
+.shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;
+  transition:filter .6s}
+.ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  color:var(--muted);font-family:"Oswald",sans-serif;letter-spacing:.12em}
+.ph b{font-size:calc(var(--fw)*.06);font-weight:500;color:#3a3a3a}
+.ph small{font-size:12px}
+
+/* 캡션 */
+figcaption{margin-top:clamp(14px,2.2vh,24px);padding:0 var(--gap);text-align:center;
+  font-size:clamp(14px,1.35vw,19px);line-height:1.7;letter-spacing:.02em;transition:opacity .6s,color .6s;
+  text-wrap:balance;word-break:keep-all}
+
+/* 비포커스 프레임 */
+.cell:not(.on) .shot img{filter:brightness(.4) grayscale(.35)}
+.cell:not(.on) figcaption{opacity:.2}
+
+/* 마지막 두 프레임 — 톤 한 단계 가라앉힘 */
+.cell.deep .shot img{filter:brightness(.82) saturate(.6) contrast(1.05)}
+.cell.deep:not(.on) .shot img{filter:brightness(.3) grayscale(.5)}
+.cell.deep figcaption{color:var(--lavender)}
+
+@media (max-width:700px){
+  figcaption{font-size:14px;line-height:1.65;min-height:calc(1.65em * 2);padding:0 4px}
+  .title{top:calc(env(safe-area-inset-top,0px) + 22px);left:20px}
+  .title h1{font-size:22px}
+  .title p{font-size:12px}
+  .foot{font-size:12px;left:20px;right:20px;bottom:calc(env(safe-area-inset-bottom,0px) + 20px)}
+}
+/* 폰 가로모드: 높이가 낮으니 프레임을 높이 기준으로 줄이고 UI 축소 */
+@media (max-height:500px) and (orientation:landscape){
+  :root{ --fw:min(58vw, 92vh); }
+  figcaption{margin-top:8px;font-size:13px;min-height:0}
+  .title{top:12px;left:max(16px, env(safe-area-inset-left,0px))}
+  .title h1{font-size:17px}
+  .title p{display:none}
+  .foot{bottom:10px;left:max(16px, env(safe-area-inset-left,0px));right:max(16px, env(safe-area-inset-right,0px));font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){
+  .track.snap,.track.intro{transition:none}
+  .shot img,figcaption{transition:none}
+}
+</style>
+</head>
+<body>
+
+<header class="title">
+  <h1>浅野 駿</h1>
+  <p>아사노 슌, 박제사</p>
+</header>
+
+<main class="viewport" id="vp" tabindex="0" aria-label="필름 릴. 드래그하거나 좌우 방향키로 넘길 수 있습니다">
+  <div class="track" id="track"></div>
+</main>
+
+<footer class="foot">
+  <span class="hint" id="hint">드래그해서 필름을 넘기세요</span>
+  <span class="count" id="count">1 / 10</span>
+</footer>
+
+<script>
+/* ── 프레임 데이터: 이미지 경로와 캡션만 수정하면 됩니다 ── */
+const FRAMES = [
+  { img:"01.jpg", cap:"태어날 때부터 조금 다르게 태어난 아이는, 중학교 어느 날 운명을 보았다." },
+  { img:"02.jpg", cap:"거부당해도 좋았다. 서서히, 그러나 반드시 스며들 것이므로." },
+  { img:"03.jpg", cap:"아사노 슌. 28세. 도쿄. 죽은 것에 영원을 새기는 사람." },
+  { img:"04.jpg", cap:"이혼가정의 외동. 가까운 사람은 있어도, 곁을 내준 적은 없었다." },
+  { img:"05.jpg", cap:"안광 없는 보랏빛 눈동자, 허리까지 닿는 검은 머리카락." },
+  { img:"06.jpg", cap:"무채색으로 정돈된 몸, 라벤더 향 하나만이 그를 따라다녔다." },
+  { img:"07.jpg", cap:"다정하고, 배려 깊고, 흠잡을 데 없는 사람. 겉으로는." },
+  { img:"08.jpg", cap:"사랑하는 이 앞에서만, 그는 비로소 나약해지고 또 집요해졌다." },
+  { img:"09.jpg", cap:"사랑이 지나치면, 곁에 두는 것만으로는 부족해지는 순간이 온다.", deep:true },
+  { img:"10.jpg", cap:"당신의 일부를 영원히 곁에 두고 싶다는, 조용하고 일그러진 소망.", deep:true },
+];
+const HOLES = 8;
+
+const vp = document.getElementById('vp');
+const track = document.getElementById('track');
+const countEl = document.getElementById('count');
+const hint = document.getElementById('hint');
+const n = FRAMES.length;
+
+/* 빌드: 무한 루프용으로 3세트 복제 (가운데 세트가 기준) */
+const COPIES = 3;
+const holes = '<div class="holes">' + '<i></i>'.repeat(HOLES) + '</div>';
+for (let c = 0; c < COPIES; c++){
+  FRAMES.forEach((f, i) => {
+    const no = i + 1;
+    const fig = document.createElement('figure');
+    fig.className = 'cell' + (f.deep ? ' deep' : '');
+    if (c !== 1) fig.setAttribute('aria-hidden', 'true');
+    fig.innerHTML = `
+      <div class="film">
+        <div class="rail top">
+          <div class="marks"><span style="left:8%">${no}</span><span style="left:52%">ASANO 400</span></div>
+          ${holes}
+        </div>
+        <div class="shot">
+          <div class="ph"><b>${String(no).padStart(2,'0')}</b><small>1218 × 832</small></div>
+          <img src="${f.img}" alt="" draggable="false">
+        </div>
+        <div class="rail bot">
+          <div class="marks"><span style="left:8%">${no}</span><span style="left:52%">▷ ${no}A</span></div>
+          ${holes}
+        </div>
+      </div>
+      <figcaption>${f.cap}</figcaption>`;
+    fig.querySelector('img').addEventListener('error', e => e.target.remove());
+    track.appendChild(fig);
+  });
+}
+const cells = [...track.children];
+const total = cells.length;
+
+/* 상태 */
+let x = 0, idx = n, cur = -1, cellW = 1;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+function setX(v){
+  x = v;
+  track.style.transform = `translate3d(${x}px,0,0)`;
+  const i = clamp(Math.round(-x / cellW), 0, total - 1);
+  if (i !== cur){
+    if (cur >= 0) cells[cur].classList.remove('on');
+    cells[i].classList.add('on');
+    cur = i;
+    countEl.textContent = `${(i % n) + 1} / ${n}`;
+  }
+}
+function goTo(i, mode = 'snap'){
+  idx = clamp(i, 0, total - 1);
+  track.classList.remove('snap', 'intro');
+  if (mode) { void track.offsetWidth; track.classList.add(mode); }
+  setX(-idx * cellW);
+}
+/* 가운데 세트 밖으로 나가면 같은 프레임의 가운데 세트 위치로 몰래 점프 */
+function normalize(){
+  const i = Math.round(-x / cellW);
+  const i2 = (((i % n) + n) % n) + n;
+  if (i === i2) return;
+  track.classList.remove('snap', 'intro');
+  track.classList.add('jump');
+  idx += (i2 - i);
+  setX(x - (i2 - i) * cellW);
+  void track.offsetWidth;
+  requestAnimationFrame(() => track.classList.remove('jump'));
+}
+track.addEventListener('transitionend', e => { if (e.target === track && !dragging) normalize(); });
+
+function layout(){
+  cellW = cells[0].offsetWidth;
+  const pad = (vp.clientWidth - cellW) / 2;
+  track.style.paddingLeft = track.style.paddingRight = pad + 'px';
+  goTo(idx, null);
+}
+function currentX(){
+  return new DOMMatrixReadOnly(getComputedStyle(track).transform).m41;
+}
+
+/* 드래그 */
+let dragging = false, startX = 0, startT = 0, lastX = 0, lastT = 0, vel = 0, moved = 0, startIdx = 0, ptype = 'mouse';
+vp.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  dragging = true; moved = 0; vel = 0;
+  track.classList.remove('snap', 'intro');
+  setX(currentX());
+  normalize();
+  startX = lastX = e.clientX; startT = x; lastT = performance.now();
+  startIdx = Math.round(-x / cellW); ptype = e.pointerType;
+  vp.setPointerCapture(e.pointerId);
+  vp.classList.add('drag');
+});
+vp.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const dx = e.clientX - startX;
+  moved = Math.max(moved, Math.abs(dx));
+  const nx = clamp(startT + dx, -(total - 1) * cellW, 0);
+  const now = performance.now(), dt = now - lastT;
+  if (dt > 0) vel = vel * .6 + ((e.clientX - lastX) / dt) * .4;
+  lastX = e.clientX; lastT = now;
+  setX(nx);
+  if (moved > 10) hint.classList.add('gone');
+});
+function endDrag(e){
+  if (!dragging) return;
+  dragging = false;
+  vp.classList.remove('drag');
+  if (moved < 6){
+    const hit = document.elementFromPoint(e.clientX, e.clientY)?.closest('.cell');
+    goTo(hit ? cells.indexOf(hit) : Math.round(-x / cellW));
+    return;
+  }
+  let target = Math.round(-(x + vel * 220) / cellW);
+  if (target === startIdx && Math.abs(vel) > .3) target = startIdx - Math.sign(vel);
+  if (ptype !== 'mouse') target = clamp(target, startIdx - 1, startIdx + 1);
+  goTo(target);
+}
+vp.addEventListener('pointerup', endDrag);
+vp.addEventListener('pointercancel', endDrag);
+
+/* 휠 / 키보드 */
+let acc = 0, lock = false;
+function step(d){ normalize(); goTo(idx + d); hint.classList.add('gone'); }
+vp.addEventListener('wheel', e => {
+  e.preventDefault();
+  acc += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+  if (!lock && Math.abs(acc) > 40){
+    step(Math.sign(acc));
+    lock = true; acc = 0;
+    setTimeout(() => { lock = false; acc = 0; }, 450);
+  }
+}, { passive:false });
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') step(1);
+  if (e.key === 'ArrowLeft')  step(-1);
+});
+
+window.addEventListener('resize', layout);
+window.addEventListener('orientationchange', () => setTimeout(layout, 250));
+if (matchMedia('(pointer:coarse)').matches) hint.textContent = '옆으로 밀어서 필름을 넘기세요';
+
+/* 첫 진입: 필름이 오른쪽에서 감겨 들어옴 */
+layout();
+setX(-(n - 1.4) * cellW);
+requestAnimationFrame(() => requestAnimationFrame(() => goTo(n, 'intro')));
+</script>
+</body>
+</html>
